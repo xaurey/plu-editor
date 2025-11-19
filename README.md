@@ -233,7 +233,7 @@ Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 ## 👤 Auteur
 
-**Xaurey**
+[**X. Aurey**](https://github.com/xaurey)
 
 ## 🙏 Remerciements
 
