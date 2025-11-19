@@ -1,0 +1,99 @@
+/* Styles de base pour TipTap */
+.tiptap {
+    min-height: 400px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    outline: none;
+}
+
+.tiptap:focus {
+    border-color: #3498db;
+}
+
+.tiptap p {
+    margin: 0 0 10px 0;
+}
+
+.tiptap h1, .tiptap h2, .tiptap h3, 
+.tiptap h4, .tiptap h5, .tiptap h6 {
+    margin: 15px 0 10px 0;
+    font-weight: 600;
+}
+
+.tiptap ul, .tiptap ol {
+    padding-left: 25px;
+    margin: 10px 0;
+}
+
+.tiptap img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+}
+
+.tiptap table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 15px 0;
+}
+
+.tiptap table td, .tiptap table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.tiptap table th {
+    background-color: #f5f7fa;
+    font-weight: 600;
+}
+
+/* Toolbar styles */
+.editor-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.editor-toolbar button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.editor-toolbar button:hover {
+    background: #ecf0f1;
+}
+
+.editor-toolbar button.is-active {
+    background: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+
+.editor-toolbar button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.editor-toolbar .separator {
+    width: 1px;
+    background: #ddd;
+    margin: 0 4px;
+}

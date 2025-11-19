@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditeur PLU CNIG SRU</title>
+    
+    <!-- TipTap CSS -->
+    <link href="inc/css/tiptap.css" rel="stylesheet">
+
+    <!-- Editeur CSS -->
+    <link href="inc/css/plu-editor.css" rel="stylesheet">
+    
+    
+</head>
+<body>
+    <!-- CDN Loading Status -->
+    <div id="cdn-status" class="cdn-status-loading">
+        <div class="cdn-status-content">
+            <div class="spinner"></div>
+            <div id="cdn-status-message">Chargement de l'application...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>📄 Éditeur PLU</h1>
+                <small>CNIG SRU Niveau 1</small>
+            </div>
+            
+            <div class="sidebar-actions">
+                <button class="btn btn-primary" data-action="new-plu">➕ Nouveau PLU</button>
+                <button class="btn btn-secondary" data-action="load-json">📂 Charger JSON</button>
+                <button class="btn btn-secondary" data-action="import-docx">📄 Importer DOCX</button>
+                <button class="btn btn-secondary" data-action="show-metadata">⚙️ Métadonnées</button>
+                <button class="btn btn-success" data-action="export-plu">💾 Exporter JSON</button>
+            </div>
+            
+            <div class="tree" id="tree">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>Créez un nouveau PLU ou chargez un fichier existant</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="editor-header" id="editor-header" style="display: none;">
+                <h2 id="section-title">Nouveau titre</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Intitulé</label>
+                        <input type="text" id="input-intitule" placeholder="Titre de la section">
+                    </div>
+                    <div class="form-group">
+                        <label>Niveau</label>
+                        <select id="input-niveau">
+                            <option value="1">Niveau 1</option>
+                            <option value="2">Niveau 2</option>
+                            <option value="3">Niveau 3</option>
+                            <option value="4">Niveau 4</option>
+                            <option value="5">Niveau 5</option>
+                            <option value="6">Niveau 6</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Zone</label>
+                        <input type="text" id="input-zone" placeholder="Ex: porteeGenerale, UA, UB...">
+                    </div>
+                    <div class="form-group">
+                        <label>Prescription</label>
+                        <input type="text" id="input-prescription" placeholder="Ex: nonConcerne, 00-00...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Numéro</label>
+                        <input type="text" id="input-numero" placeholder="Ex: I, I.1, 5.4.2...">
+                    </div>
+                    <div class="form-group">
+                        <label>Communes (INSEE)</label>
+                        <div id="input-insee-checkboxes" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9;">
+                            <!-- Checkboxes will be dynamically generated here -->
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button class="btn btn-success" data-action="save-titre-metadata">💾 Enregistrer le titre</button>
+                    <button class="btn btn-primary" data-action="add-content">➕ Ajouter du contenu</button>
+                </div>
+            </div>
+
+            <div class="editor-container">
+                <div id="welcome-screen" class="empty-state">
+                    <div class="empty-state-icon">✏️</div>
+                    <h3>Bienvenue dans l'éditeur PLU</h3>
+                    <p>Sélectionnez un élément dans l'arbre pour commencer l'édition</p>
+                </div>
+
+                <div id="editor-screen" style="display: none;">
+                    <!-- Zone d'édition TipTap (cachée par défaut) -->
+                    <div id="tiptap-editor-zone" style="display: none;">
+                        <h3>Édition du contenu HTML</h3>
+                        <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 13px; color: #1976d2;">
+                            💡 <strong>Astuce :</strong> Pour créer plusieurs contenus en une seule fois, tapez <strong>***</strong> sur une ligne seule (puis Entrée) pour séparer vos contenus.
+                        </div>
+                        <!-- Champs spécifiques au contenu -->
+                        <div style="background: #fff3cd; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #ffc107;">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: #856404;">
+                                🎯 Zones et prescriptions spécifiques au contenu
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Zone (contenu)</label>
+                                    <input type="text" id="input-contenu-zone" placeholder="Ex: UE1, UE2... (hérite du titre si vide)">
+                                    <small style="color: #856404; font-size: 11px;">Laissez vide pour hériter de la zone du titre</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prescription (contenu)</label>
+                                    <input type="text" id="input-contenu-prescription" placeholder="Ex: 01-01, 02-03... (hérite du titre si vide)">
+                                    <small style="color: #856404; font-size: 11px;">Laissez vide pour hériter de la prescription du titre</small>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- TIPTAP -->
+                        <div id="editor-toolbar" class="editor-toolbar"></div>
+                        <div id="editor" class="tiptap"></div>
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button class="btn btn-success" data-action="save-content">💾 Enregistrer le contenu</button>
+                            <button class="btn btn-secondary" data-action="cancel-edit">❌ Annuler</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Liste des contenus (visible par défaut) -->
+                    <div class="content-preview" id="content-preview">
+                        <h3>Contenus de cette section</h3>
+                        <div id="content-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for new title -->
+    <div class="modal" id="newTitleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ajouter un nouveau titre</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Intitulé</label>
+                    <input type="text" id="modal-intitule" placeholder="Ex: Dispositions générales">
+                </div>
+                <div class="form-group">
+                    <label>Niveau</label>
+                    <select id="modal-niveau">
+                        <option value="1">Niveau 1</option>
+                        <option value="2">Niveau 2</option>
+                        <option value="3">Niveau 3</option>
+                        <option value="4">Niveau 4</option>
+                        <option value="5">Niveau 5</option>
+                        <option value="6">Niveau 6</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-action="cancel-new-title">Annuler</button>
+                <button class="btn btn-primary" data-action="confirm-new-title">Créer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for metadata -->
+    <div class="modal" id="metadataModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>⚙️ Métadonnées du PLU</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nom du règlement</label>
+                    <input type="text" id="meta-nom" placeholder="Règlement du Plan Local d'Urbanisme">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Type de document</label>
+                        <select id="meta-typeDoc">
+                            <option value="PLU">PLU - Plan Local d'Urbanisme</option>
+                            <option value="PLUi">PLUi - Plan Local d'Urbanisme Intercommunal</option>
+                            <option value="PSMV">PSMV - Plan de Sauvegarde et de Mise en Valeur</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date d'approbation (AAAAMMJJ)</label>
+                        <input type="text" id="meta-date" placeholder="20221220" maxlength="8">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Code(s) INSEE des communes (séparés par des virgules)</label>
+                    <input type="text" id="meta-insee" placeholder="14027, 14047, 14083">
+                    <small style="color: #7f8c8d; font-size: 12px;">Pour un PLU : un seul code. Pour un PLUi : plusieurs codes séparés par des virgules.</small>
+                </div>
+
+                <div class="form-group" id="meta-siren-group">
+                    <label>Code SIREN de l'EPCI (9 chiffres, pour PLUi uniquement)</label>
+                    <input type="text" id="meta-siren" placeholder="200069524" maxlength="9">
+                    <small style="color: #7f8c8d; font-size: 12px;">Obligatoire pour les PLUi, laisser vide pour les PLU.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Lien vers le Géoportail de l'urbanisme</label>
+                    <input type="text" id="meta-lien" placeholder="https://www.geoportail-urbanisme.gouv.fr/">
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #7f8c8d; font-weight: normal;">Identifiants générés automatiquement :</label>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 13px;">
+                        <div><strong>idUrba:</strong> <span id="preview-idUrba">-</span></div>
+                        <div><strong>idReglement:</strong> <span id="preview-idReglement">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-action="cancel-metadata">Annuler</button>
+                <button class="btn btn-primary" data-action="save-metadata">💾 Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recovery Modal -->
+    <div class="modal" id="recoveryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔄 Récupération automatique</h3>
+            </div>
+            <div class="modal-body">
+                <p>Une sauvegarde automatique a été trouvée :</p>
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin: 10px 0;">
+                    <strong>Date :</strong> <span id="recovery-date"></span><br>
+                    <strong>Document :</strong> <span id="recovery-name"></span>
+                </div>
+                <p>Voulez-vous récupérer ce travail ?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-action="decline-recovery">❌ Non, ignorer</button>
+                <button class="btn btn-primary" data-action="accept-recovery">✅ Oui, récupérer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+    <input type="file" id="docxInput" accept=".docx" style="display: none;">
+
+    <!-- Mammoth.js for DOCX parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+
+    <!-- JSZip for creating ZIP files -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <!-- CDN Error Detection -->
+    <script>
+        function showCdnError(message) {
+            const statusEl = document.getElementById('cdn-status');
+            const messageEl = document.getElementById('cdn-status-message');
+
+            if (statusEl && messageEl) {
+                statusEl.className = 'cdn-status-error';
+                messageEl.innerHTML = message ||
+                    '<strong>⚠️ Erreur de chargement</strong><br><br>' +
+                    'Le CDN est actuellement indisponible.<br>' +
+                    'Veuillez réessayer dans quelques instants.<br><br>' +
+                    '<small style="opacity: 0.8;">Si le problème persiste, contactez l\'administrateur.</small>';
+            }
+        }
+
+        // Detect module loading errors (multiple approaches)
+        window.addEventListener('error', function(event) {
+            console.log('Error event:', event);
+
+            // Ignore source map errors (not critical for functionality)
+            if (event.filename && event.filename.includes('.map')) {
+                console.log('Source map error (ignored):', event.filename);
+                return;
+            }
+
+            // Check various properties that might indicate a CDN error
+            const isCdnError =
+                (event.filename && (event.filename.includes('esm.sh') || event.filename.includes('tiptap'))) ||
+                (event.message && (event.message.includes('esm.sh') || event.message.includes('tiptap') || event.message.includes('Failed to fetch'))) ||
+                (event.target && event.target.tagName === 'SCRIPT' && event.target.src && (event.target.src.includes('esm.sh') || event.target.src.includes('tiptap')));
+
+            if (isCdnError) {
+                console.log('CDN error detected');
+                showCdnError();
+            }
+        }, true);
+
+        // Also catch unhandled promise rejections (for dynamic imports)
+        window.addEventListener('unhandledrejection', function(event) {
+            console.log('Unhandled rejection:', event);
+
+            if (event.reason && event.reason.message) {
+                const message = event.reason.message.toLowerCase();
+                if (message.includes('esm.sh') || message.includes('tiptap') ||
+                    message.includes('failed to fetch') || message.includes('module')) {
+                    console.log('Module loading rejection detected');
+                    showCdnError();
+                }
+            }
+        });
+
+        // Timeout fallback - if app doesn't load in 10 seconds, show error
+        setTimeout(function() {
+            const statusEl = document.getElementById('cdn-status');
+            if (statusEl && !statusEl.classList.contains('cdn-status-hidden')) {
+                console.log('Timeout: app did not load');
+                showCdnError(
+                    '<strong>⚠️ Timeout de chargement</strong><br><br>' +
+                    'L\'application met trop de temps à se charger.<br>' +
+                    'Le CDN est peut-être indisponible.<br><br>' +
+                    '<small style="opacity: 0.8;">Veuillez rafraîchir la page.</small>'
+                );
+            }
+        }, 10000);
+    </script>
+
+    <!-- Application principale en modules ES6 -->
+    <script type="module" src="inc/js/main.js"></script>
+</body>
+</html>

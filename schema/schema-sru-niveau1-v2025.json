@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cnig.gouv.fr/schemas/sru-niveau1/v2025-10/schema.json",
+  "title": "Standard CNIG - Structuration du Règlement d'Urbanisme de niveau 1",
+  "description": "Schéma JSON pour la structuration des règlements d'urbanisme (PLU/PLUi/PSMV) conforme au standard CNIG SRU niveau 1 version 2025-10",
+  "type": "object",
+  "required": ["idReglement", "nom", "typeDoc", "lien", "idUrba", "inseeCommune", "titre"],
+  "properties": {
+    "idReglement": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_./:-]+$",
+      "description": "Identifiant unique du règlement d'urbanisme structuré. Ex: 15079_PLU_20240605/reglement"
+    },
+    "nom": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nom du règlement d'urbanisme. Ex: Règlement du Plan local d'urbanisme de Jaleyrac"
+    },
+    "typeDoc": {
+      "type": "string",
+      "enum": ["PLU", "PLUi", "PSMV", "POS", "CC"],
+      "description": "Type du document d'urbanisme. Correspond à la valeur TYPEDOC de la classe DOC_URBA"
+    },
+    "lien": {
+      "type": "string",
+      "format": "uri",
+      "description": "Hyperlien vers le fichier de métadonnées du document d'urbanisme sur le Géoportail de l'Urbanisme"
+    },
+    "idUrba": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_]+$",
+      "description": "Identifiant IDURBA du document d'urbanisme dans le standard CNIG PLU. Ex: 15079_PLU_20240605"
+    },
+    "inseeCommune": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^\\d{5}$",
+        "description": "Code INSEE d'une commune (5 chiffres)"
+      },
+      "description": "Codes INSEE des communes concernées par le document"
+    },
+    "sirenEpci": {
+      "type": "string",
+      "pattern": "^\\d{9}$",
+      "description": "Identifiant SIREN de l'EPCI (9 chiffres). Obligatoire pour les PLUi"
+    },
+    "titre": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Titre"
+      },
+      "description": "Le règlement d'urbanisme est composé de titres"
+    }
+  },
+  "if": {
+    "properties": {
+      "typeDoc": {
+        "const": "PLUi"
+      }
+    }
+  },
+  "then": {
+    "required": ["sirenEpci"]
+  },
+  "$defs": {
+    "Titre": {
+      "type": "object",
+      "required": ["idTitre", "intitule", "niveau", "idZone", "idPrescription", "inseeCommune"],
+      "properties": {
+        "idTitre": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_./:-]+$",
+          "description": "Identifiant unique du titre dans le règlement. Ex: 15079_PLU_20041103/reglement/dg, 15079_PLU_20041103/reglement/UE/UE2"
+        },
+        "intitule": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Intitulé du titre dans le règlement. Ex: Dispositions Générales, Zone UE2"
+        },
+        "niveau": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "description": "Niveau du titre dans la hiérarchie (1 à 6)"
+        },
+        "numero": {
+          "type": "string",
+          "description": "Numéro du titre dans l'arborescence du règlement. Ex: I, I.1, 5.4.2"
+        },
+        "idZone": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(porteeGenerale|[A-Za-z0-9]+)$",
+            "description": "LIBELLE de la zone d'urbanisme ou 'porteeGenerale'"
+          },
+          "description": "Zone(s) d'urbanisme correspondant au titre"
+        },
+        "idPrescription": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(nonConcerne|00-00|00-00-00|[0-9]{2}-[0-9]{2}(-[A-Za-z0-9_]+)?)$",
+            "description": "Code prescription au format TYPEPSC-STYPEPSC ou TYPEPSC-STYPEPSC-NATURE"
+          },
+          "description": "Prescription(s) correspondant au titre. 'nonConcerne' si aucune prescription, '00-00' ou '00-00-00' si toutes"
+        },
+        "inseeCommune": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          },
+          "description": "Codes INSEE des communes concernées par ce titre"
+        },
+        "contenu": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Contenu"
+          },
+          "description": "Contenus HTML de ce titre"
+        },
+        "titre": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Titre"
+          },
+          "description": "Sous-titres de ce titre (structure récursive)"
+        }
+      },
+      "description": "Un titre du règlement d'urbanisme, pouvant contenir des sous-titres"
+    },
+    "Contenu": {
+      "type": "object",
+      "required": ["idContenu", "idZone", "idPrescription", "html"],
+      "properties": {
+        "idContenu": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_./:-]+$",
+          "description": "Identifiant unique du contenu. Ex: 44712_PLU_20041103/reglement/UE/contenu01"
+        },
+        "idZone": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(porteeGenerale|[A-Za-z0-9]+)$"
+          },
+          "description": "Zone(s) d'urbanisme correspondant au contenu"
+        },
+        "idPrescription": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(nonConcerne|00-00|00-00-00|[0-9]{2}-[0-9]{2}(-[A-Za-z0-9_]+)?)$"
+          },
+          "description": "Prescription(s) correspondant au contenu"
+        },
+        "html": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/HtmlNode"
+              },
+              {
+                "type": "string",
+                "description": "Texte brut"
+              }
+            ]
+          },
+          "description": "Contenu du texte réglementaire en HTML structuré"
+        }
+      },
+      "description": "Un élément de contenu HTML d'un titre"
+    },
+    "HtmlNode": {
+      "type": "object",
+      "required": ["tag"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": [
+            "div",
+            "p",
+            "span",
+            "ul",
+            "ol",
+            "li",
+            "em",
+            "strong",
+            "table",
+            "tr",
+            "td",
+            "th",
+            "thead",
+            "tbody",
+            "a",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "br",
+            "img"
+          ],
+          "description": "Nom de la balise HTML"
+        },
+        "attrs": {
+          "type": "object",
+          "properties": {
+            "href": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL du lien (pour balise <a>)"
+            },
+            "src": {
+              "type": "string",
+              "description": "Source de l'image (pour balise <img>). Ex: ressources/monImage.png"
+            },
+            "alt": {
+              "type": "string",
+              "description": "Texte alternatif de l'image (pour balise <img>)"
+            },
+            "style": {
+              "type": "string",
+              "pattern": "^text-decoration:\\s*underline$",
+              "description": "Style CSS autorisé uniquement pour souligner (text-decoration: underline)"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Attributs HTML autorisés selon la balise"
+        },
+        "text": {
+          "type": "string",
+          "description": "Texte brut de l'élément (pour nœud feuille sans enfants)"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/HtmlNode"
+              },
+              {
+                "type": "string",
+                "description": "Texte brut"
+              }
+            ]
+          },
+          "description": "Liste d'enfants de type HtmlNode ou chaînes de texte"
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["text"],
+          "not": {
+            "required": ["children"]
+          }
+        },
+        {
+          "required": ["children"],
+          "not": {
+            "required": ["text"]
+          }
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "tag": {
+                  "const": "br"
+                }
+              }
+            },
+            {
+              "not": {
+                "required": ["text", "children"]
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "tag": {
+                  "const": "img"
+                }
+              }
+            },
+            {
+              "not": {
+                "required": ["text", "children"]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Un nœud HTML avec son contenu"
+    }
+  }
+}
